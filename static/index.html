@@ -10,20 +10,26 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>Self Shopee</title>
+    <title>Self Shopee11</title>
 
     <!-- Bootstrap core CSS -->
 
+	
+	
 	
 	    <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Custom styles for this template -->
     <link href="css/heroic-features.css" rel="stylesheet">
-<script src="vendor/jquery/jquery.min.js"></script>
+
+   <script src="//www.paypalobjects.com/api/checkout.4.0.167.js" ></script>
+   <script src="vendor/jquery/jquery.min.js"></script>
+   
+   
+   
+   
     <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
 	
-   <script src="//www.paypalobjects.com/api/checkout.js" ></script>
-   
   </head>
 
   <body>
@@ -124,7 +130,7 @@
   <option value="4" >4</option>
 </select> 
 
-<button id="total1" class="btn"></button>
+<div id="total1" class="btn"></div>
             </div>
           </div>
         </div>
@@ -145,7 +151,7 @@
   <option value="3">3</option>
   <option value="4">4</option>
 </select> 
-<button id="total2" class="btn"></button>
+<div id="total2" class="btn"></div>
             </div>
           </div>
         </div>
@@ -168,7 +174,7 @@
   <option value="3">3</option>
   <option value="4">4</option>
 </select> 
-<button id="total3" class="btn"></button>
+<div id="total3" class="btn"></div>
             </div>
           </div>
         </div>
@@ -188,7 +194,7 @@
   <option value="3">3</option>
   <option value="4">4</option>
 </select>
-<button id="total4" class="btn"></button>
+<div id="total4" class="btn"></div>
             </div>
           </div>
         </div>
@@ -198,13 +204,47 @@
 	  </div>
       <!-- /.row -->
 	
+<table>
+<tbody>
+                 
+              
+  
+                    <tr>
+                        <td>   </td>
+                        <td>   </td>
+                        <td>   </td>
+                        <td><h3>Total</h3></td>
+                        <td class="text-right"><h3><strong><div id="total"></div></strong></h3></td>
+                    </tr>
+					
+					<tr>
+						<td>   </td>
+                        <td>   </td>
+         
+                        <td   id="msg" style="color:red" class="hidden error" ><strong><a style="margin-left:300px">Please choose quantity</a></strong></td>
+                    </tr>					
+                    <tr>
+                        <td>   </td>
+                        <td>   </td>
+                        <td>   </td>
+                        <td>
+                      
+                        <td>
+                      <div  id="paymentMethods"></div>
+					  </td>
+                    </tr>   
+					<tr>
+                        <td>   </td>
+                        <td>   </td>
+                        <td>   </td>
+                    
+                    </tr>
+					
+</tbody>
+</table>			 
 			 
-			 
-<p id="msg" style="color:red" class="hidden error">Please choose quantity</p>
-Total Amount:
-<div id="total"></div>
 
-<br/><div id="paymentMethods"></div>
+<br/>
     
 	
 	
@@ -242,23 +282,42 @@ Total Amount:
    </script>
  
  	 <script>
+	 
+	 var availableCount=[];
+		$.get( "/available", function( data ) {
+				console.log(data);
+				//var items=JSON.parse(data);
+				console.log(data.items);
+				availableCount=data.items;
+				//alert( "Load was performed." );
+		});
 	 var count1=0;
 	 var count2=0;
 	 var count3=0;
 	 var count4=0;
 	 var total=0;
 	   function isValid() {
-	   
+			
 				
-				
-				if(count1 == 0 && count2 ==0 && count3==0 && count4==0){
-					return false;
-				}else{
+			if(total>0 && count1 <= availableCount[0] && count2 <= availableCount[1] && count3 <= availableCount[2] &&count4 <= availableCount[3])
+				{
+					//document.querySelector('#msg').style.display ="false";
 					return true;
 				}
+			else
+			return false;
         
     }
+	  function toggleValidationMessage() {
+        document.querySelector('#msg').style.display = (isValid() ? 'none' : 'block');
+    }
+	function toggleButton(actions) {
+        return isValid() ? actions.enable() : actions.disable();
+    }
+	
+	
 	function updater(){
+				
 				 count1=$("#sel1").val();
 				 count2=$("#sel2").val();
 				 count3=$("#sel3").val();
@@ -269,41 +328,51 @@ Total Amount:
 				$("#total2").html(count2*9+" Rs");
 				$("#total3").html(count3*13+" Rs");
 				$("#total4").html(count4*15+" Rs");
+				
+				if(count1> availableCount[0]){
+					alert("maximum available is "+availableCount[0]);
+				}if(count2> availableCount[1]){
+					alert("maximum available is "+availableCount[1]);
+				}if(count3> availableCount[2]){
+					alert("maximum available is "+availableCount[2]);
+				}if(count4> availableCount[3]){
+					alert("maximum available is "+availableCount[3]);
+				}
+				
 	}
-	 function onChangeDropdown(handler) {
-        document.querySelector("#sel1").addEventListener('change', handler);
-        document.querySelector("#sel1").addEventListener('change', updater);
-        document.querySelector("#sel2").addEventListener('change', handler);
-        document.querySelector("#sel2").addEventListener('change', updater);
-        document.querySelector("#sel3").addEventListener('change', handler);
-        document.querySelector("#sel3").addEventListener('change', updater);
-        document.querySelector("#sel4").addEventListener('change', handler);
-        document.querySelector("#sel4").addEventListener('change', updater);
+ function onChangeCheckbox(handler) {
+        document.querySelector('#sel1').addEventListener('change', handler);
+        document.querySelector('#sel2').addEventListener('change', handler);
+        document.querySelector('#sel3').addEventListener('change', handler);
+        document.querySelector('#sel4').addEventListener('change', handler);
     }
-	  function toggleValidationMessage() {
-        document.querySelector('#msg').style.display = (isValid() ? 'none' : 'block');
-    }
-	 function toggleButton(actions) {
-        return isValid() ? actions.enable() : actions.disable();
-    }
+	
         paypal.Button.render({
 
             env: 'sandbox', // Or 'production',
 
             commit: false, // Show a 'Pay Now' button
-			 
-			validate: function(actions) {
-				toggleButton(actions);
+		
+		  validate: function(actions) {
+  //        toggleButton(actions);
 
-				onChangeDropdown(function() {
-					toggleButton(actions);
-				});
-			},
+
+            onChangeCheckbox(function() {
+				updater();
+	            toggleButton(actions);
+				toggleValidationMessage();
+            });
+  
+  },
+
+       // onClick: function() {
+        //  toggleValidationMessage();  
+        //},
             payment: function() {
                 // Set up the payment here
                 // 1. call your server side method or api to intiate the paymnets
                 var data = {
-                	"description" : "Item DEtails",
+                	"description" : count1+","+count2+","+count3+","+count4,
                 	"shipping":"0",
                 	"tax":"0",
                 	"shipping_discount":"0",
@@ -327,22 +396,20 @@ Total Amount:
 						json: data
 					})
 					.then(function(res) {
+						console.log(res);
 						var json = queryStringToJSON(res);
 						return json.TOKEN;
 					}); 
 				
              	
             },
-			onClick: function() {
-				toggleValidationMessage();
-			},
             onAuthorize: function(data, actions) {
             	// Set up a url on your server to execute the payment
 				var EXECUTE_URL = 'ExecutePayments';
 			   
 	                
 	          		var data1 = {
-                	"description" : "Item DEtails",
+                	"description" : count1+","+count2+","+count3+","+count4,
                 	"shipping":"0",
                 	"tax":"0",
                 	"shipping_discount":"0",
@@ -366,10 +433,14 @@ Total Amount:
 	       				    url: 'ExecutePayments',
 	       				    json: data1
 		       				}).then(function(res) {
+									console.log(res);
 		       				   var json = queryStringToJSON(res);
 		                           if(json.ACK == "Success"){
-			                       	window.location.href="successPayment?token="+json.TOKEN;
-			                       }
+								   
+			                       	window.location.href="successPayment?token="+json.TOKEN+"&startCounts="+availableCount.join(",")+"&counts="+count1+","+count2+","+count3+","+count4;
+			                       }else{
+									alert("payment failed");
+								   }
 		       			       }).catch(function(err){
 		       						alert(err);
 		       				}); 

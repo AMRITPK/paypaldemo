@@ -3,13 +3,14 @@
 from flask import Flask , request, send_from_directory, jsonify
 from urllib import urlencode
 from urlparse import parse_qs, urlsplit, urlunsplit
-
+from flask import session
 
 app = Flask(__name__ , static_url_path='')
+from flask import jsonify
 
 import requests
-from requests.packages.urllib3.poolmanager import PoolManager
-
+#from requests.packages.urllib3.poolmanager import PoolManager
+from urllib3.poolmanager import PoolManager
 import json
 import base64
 import uuid
@@ -17,6 +18,7 @@ import string
 import urllib
 import urlparse
 import ssl
+#import backports.ssl as ssl
 import config
 import urllib2
 
@@ -32,7 +34,7 @@ class MyAdapter(requests.adapters.HTTPAdapter):
             num_pools=connections,
             maxsize=maxsize,
             block=block,
-            ssl_version=ssl.PROTOCOL_TLSv1_2,
+            #ssl_version=ssl.PROTOCOL_TLSv1_2,
         )
         print("poolmanager set")
 
@@ -45,6 +47,14 @@ def send_js(path):
 @app.route("/")
 def root():
 	return app.send_static_file('index.html')
+@app.route("/available")
+def available():
+	itemjson={};
+	f=open("items.txt","r") 
+	results = map(int, f.read().split(","))
+	itemjson['items']=results
+	#session['items']=itemjson['items']
+	return jsonify(itemjson);
 
 def constructQueryParam(urlString, paramName, paramvalue):
 	try:
@@ -178,7 +188,29 @@ def executePayment():
 		payloadData = constructQueryParam(payloadData, 'PAYMENTREQUEST_0_ITEMAMT', postData['total'])
 		payloadData = constructQueryParam(payloadData, 'L_PAYMENTREQUEST_0_NAME0', postData['name'])
 		payloadData = constructQueryParam(payloadData, 'L_PAYMENTREQUEST_0_AMT0', postData['total'])
-
+			
+		items=postData['description']
+		print items
+		itemarr=map(int, items.split(","))		
+		res=[0,0,0,0]
+		f=open("items.txt","r") 
+		itemFromFile=f.read().split(",")
+		itemFromFileint = map(int, itemFromFile)		
+		print itemFromFileint
+		print 'hello1'
+		i=0
+		print 'hello2'
+		for item in itemFromFileint:
+			print 'hello3'
+			res[i]=itemFromFileint[i]-itemarr[i]
+			i+=1	
+		print 'hello'
+		resStr=map(str, res)
+		file = open("items.txt", "w")
+		file.write(','.join(resStr));
+		file.close()
+		print 'itemarr'
+		print itemarr
 		headers = {
 			'content-type': "application/json",
 			'PayPal-Partner-Attribution-Id' : configuration['BN_CODE']
@@ -230,7 +262,8 @@ def showSuccessPageData():
 
 
 
-
+app.secret_key = 'super secret key'
+app.config['SESSION_TYPE'] = 'filesystem'
 
 if __name__ == '__main__':
-   app.run(debug = True)
+   app.run(host='10.21.62.92',port=8080,debug = True)
